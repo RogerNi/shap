@@ -43,6 +43,7 @@ For :class:`shap.GPUTreeExplainer` installation, see :ref:`GPU support <gpu-supp
     shap.SamplingExplainer
     shap.AdditiveExplainer
     shap.DeepExplainer
+    shap.EmbeddingDeepExplainer
     shap.KernelExplainer
     shap.GradientExplainer
     shap.ExactExplainer

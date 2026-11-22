@@ -7,6 +7,7 @@ from .explainers import other
 from .explainers._additive import AdditiveExplainer
 from .explainers._coalition import CoalitionExplainer
 from .explainers._deep import DeepExplainer
+from .explainers._embedding_deep import EmbeddingDeepExplainer
 from .explainers._exact import ExactExplainer
 from .explainers._explainer import Explainer
 from .explainers._gradient import GradientExplainer
@@ -107,6 +108,7 @@ __all__ = [
     "other",
     "AdditiveExplainer",
     "DeepExplainer",
+    "EmbeddingDeepExplainer",
     "ExactExplainer",
     "Explainer",
     "GPUTreeExplainer",

@@ -3,6 +3,7 @@ from importlib.metadata import entry_points
 from ._additive import AdditiveExplainer
 from ._coalition import CoalitionExplainer
 from ._deep import DeepExplainer
+from ._embedding_deep import EmbeddingDeepExplainer
 from ._exact import ExactExplainer
 from ._gradient import GradientExplainer
 from ._kernel import KernelExplainer
@@ -45,6 +46,7 @@ Tree = TreeExplainer
 __all__ = [
     "AdditiveExplainer",
     "DeepExplainer",
+    "EmbeddingDeepExplainer",
     "ExactExplainer",
     "GPUTreeExplainer",
     "GradientExplainer",
