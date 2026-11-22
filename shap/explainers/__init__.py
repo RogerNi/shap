@@ -6,6 +6,7 @@ from ._deep import DeepExplainer
 from ._embedding_deep import EmbeddingDeepExplainer
 from ._exact import ExactExplainer
 from ._gradient import GradientExplainer
+from ._ida_item import IDAItem, IDAItemExplainer
 from ._kernel import KernelExplainer
 from ._linear import LinearExplainer
 from ._partition import PartitionExplainer
@@ -47,6 +48,8 @@ __all__ = [
     "AdditiveExplainer",
     "DeepExplainer",
     "EmbeddingDeepExplainer",
+    "IDAItem",
+    "IDAItemExplainer",
     "ExactExplainer",
     "GPUTreeExplainer",
     "GradientExplainer",

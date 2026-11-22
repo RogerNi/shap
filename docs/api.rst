@@ -44,6 +44,7 @@ For :class:`shap.GPUTreeExplainer` installation, see :ref:`GPU support <gpu-supp
     shap.AdditiveExplainer
     shap.DeepExplainer
     shap.EmbeddingDeepExplainer
+    shap.IDAItemExplainer
     shap.KernelExplainer
     shap.GradientExplainer
     shap.ExactExplainer
@@ -53,6 +54,14 @@ For :class:`shap.GPUTreeExplainer` installation, see :ref:`GPU support <gpu-supp
     shap.explainers.other.Maple
     shap.explainers.other.TreeMaple
     shap.explainers.other.TreeGain
+
+IDA item metadata and masking examples
+--------------------------------------
+``shap.IDAItem(name, start, stop, address=None)`` defines a contiguous file-backed
+item using an exclusive stop offset. ``shap.IDAItemExplainer`` explains these items
+as whole coalition features using exact or permutation SHAP. Hidden items are
+replaced with aligned reference bytes, preserving file length and offsets. Bytes
+outside the selected items remain fixed to the original input.
 
 
 .. _plots_api:
