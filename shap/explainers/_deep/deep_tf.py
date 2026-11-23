@@ -1,5 +1,6 @@
 import warnings
 from collections.abc import Callable
+from copy import copy
 
 import numpy as np
 import tensorflow as tf
@@ -533,6 +534,52 @@ def maxpool(explainer, op, *grads):
     )
 
 
+def max_reduce(explainer, op, *grads):
+    """Apply SHAP's existing MaxPool cross-max rule to a reduction."""
+    if explainer._variable_inputs(op)[1]:
+        raise ValueError("The reduction axes of a Max operation cannot vary.")
+    axes = tf.get_static_value(op.inputs[1])
+    if axes is None:
+        raise ValueError("Max attribution requires constant reduction axes.")
+    axes = np.atleast_1d(axes)
+    rank = op.inputs[0].shape.rank
+    if np.any(axes < 0):
+        if rank is None:
+            raise ValueError("Max attribution requires a known rank for negative reduction axes.")
+        axes = np.where(axes < 0, axes + rank, axes)
+    if np.any(axes == 0):
+        raise ValueError("Max attribution cannot reduce the batch dimension.")
+
+    xin, rin = tf.split(op.inputs[0], 2)
+    xout, rout = tf.split(op.outputs[0], 2)
+    cross_max = tf.maximum(xout, rout)
+    # Identical masked slices may have infinite maxima; their difference is zero.
+    same = tf.equal(xout, rout)
+    diffs = tf.concat(
+        [
+            tf.where(same, tf.zeros_like(xout), cross_max - rout),
+            tf.where(same, tf.zeros_like(xout), xout - cross_max),
+        ],
+        0,
+    )
+    # The original reduction gradient expands reduced axes and shares exact ties.
+    gradient_op = op
+    if op.type.startswith("shap_"):
+        # Eager MockOp.get_attr resolves attributes using the operation type.
+        gradient_op = copy(op)
+        gradient_op.type = "Max"
+    input_grad = explainer.orig_grads["Max"](gradient_op, grads[0] * diffs)[0]
+    xgrad, rgrad = tf.split(input_grad, 2)
+    numerator = xgrad + rgrad
+    delta = xin - rin
+    # Zero numerators include unchanged -inf masks, whose input delta is NaN.
+    # Avoid an absolute cutoff: small but nonzero contributions must be retained.
+    nonzero = tf.not_equal(numerator, 0)
+    denominator = tf.where(nonzero, delta, tf.ones_like(delta))
+    multiplier = tf.where(nonzero, numerator / denominator, tf.zeros_like(delta))
+    return [tf.concat([multiplier, multiplier], 0), None]
+
+
 def gather(explainer, op, *grads):
     # params = op.inputs[0]
     indices = op.inputs[1]
@@ -764,7 +811,7 @@ op_handlers["Exp"] = nonlinearity_1d(0)
 op_handlers["ClipByValue"] = nonlinearity_1d(0)
 op_handlers["Rsqrt"] = nonlinearity_1d(0)
 op_handlers["Square"] = nonlinearity_1d(0)
-op_handlers["Max"] = nonlinearity_1d(0)
+op_handlers["Max"] = max_reduce
 
 # ops that are nonlinear and allow two inputs to vary
 op_handlers["SquaredDifference"] = nonlinearity_1d_nonlinearity_2d(0, 1, lambda x, y: (x - y) * (x - y))
@@ -785,6 +832,5 @@ op_handlers["Softmax"] = softmax
 
 # TODO items
 # TensorArrayGatherV3
-# Max
 # TensorArraySizeV3
 # Range
